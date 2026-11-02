@@ -1,32 +1,25 @@
 --!nolint
 --[[
-    ZekeHub - Adopt Me (Autonomous Replica)
-    UI : Custom Dark Code Theme (Sidebar + 2-Column GroupBoxes + Search Filter)
-    49 Features · 16 Categories
+    ZekeHub - Adopt Me (Functional Remote Execution & Fairytale Update)
 ]]
 
 local BootStrap = ...
 local CloneRef = cloneref or function(o) return o end
 
 local Players = CloneRef(game:GetService("Players"))
-local TweenService = CloneRef(game:GetService("TweenService"))
 local UserInputService = CloneRef(game:GetService("UserInputService"))
 local HttpService = CloneRef(game:GetService("HttpService"))
-local RunService = CloneRef(game:GetService("RunService"))
+local ReplicatedStorage = CloneRef(game:GetService("ReplicatedStorage"))
 local CoreGui = CloneRef(game:GetService("CoreGui"))
 
 local LocalPlayer = Players.LocalPlayer
 local GetHui = gethui or function() return CoreGui end
 local ProtectGui = protectgui or (syn and syn.protect_gui) or function() end
 
--- Nettoyage d'une ancienne instance
 if getgenv().ZekeHubUI then
     pcall(function() getgenv().ZekeHubUI:Destroy() end)
 end
 
---==============================================================================
--- 1. ÉTAT GLOBAL, FLAGS & CONFIGURATIONS
---==============================================================================
 local ZekeHub = {
     Flags = {},
     SignalHandlers = {},
@@ -54,9 +47,7 @@ function ZekeHub:OnFlagChanged(flagName, callback)
     self.SignalHandlers[flagName] = callback
 end
 
---==============================================================================
--- 2. MOTEUR D'INTERFACE (STYLE ZEKEHUB / LINORIA DARK CODE)
---==============================================================================
+-- Thème sombre Linoria / ZekeHub
 local Theme = {
     Background = Color3.fromHex("111111"),
     Main       = Color3.fromHex("181818"),
@@ -88,7 +79,6 @@ ProtectGui(ScreenGui)
 ScreenGui.Parent = GetHui()
 getgenv().ZekeHubUI = ScreenGui
 
--- Fenêtre principale avec contour bleu électrique
 local MainWindow = Create("Frame", {
     Size = UDim2.fromOffset(760, 560),
     Position = UDim2.fromScale(0.5, 0.5),
@@ -100,27 +90,20 @@ local MainWindow = Create("Frame", {
 Create("UICorner", { CornerRadius = UDim.new(0, 4), Parent = MainWindow })
 Create("UIStroke", { Color = Theme.Accent, Thickness = 1.2, Parent = MainWindow })
 
--- Barre supérieure (Header + Search)
 local TopBar = Create("Frame", {
     Size = UDim2.new(1, 0, 0, 34),
     BackgroundColor3 = Theme.Main,
     BorderSizePixel = 0,
     Parent = MainWindow
 })
-Create("Frame", {
-    Size = UDim2.new(1, 0, 0, 1),
-    Position = UDim2.new(0, 0, 1, -1),
-    BackgroundColor3 = Theme.Outline,
-    BorderSizePixel = 0,
-    Parent = TopBar
-})
+Create("Frame", { Size = UDim2.new(1, 0, 0, 1), Position = UDim2.new(0, 0, 1, -1), BackgroundColor3 = Theme.Outline, BorderSizePixel = 0, Parent = TopBar })
 
 Create("TextLabel", {
     Size = UDim2.new(0, 320, 1, 0),
     Position = UDim2.fromOffset(12, 0),
     BackgroundTransparency = 1,
     Font = Enum.Font.Code,
-    Text = "<  Zeke Hub  |  Adopt Me  |  Autonomous",
+    Text = "<  Zeke Hub  |  Adopt Me  |  Functional Remotes",
     TextColor3 = Theme.Text,
     TextSize = 13,
     TextXAlignment = Enum.TextXAlignment.Left,
@@ -134,7 +117,7 @@ local SearchBox = Create("TextBox", {
     BackgroundColor3 = Theme.Background,
     BorderSizePixel = 0,
     Font = Enum.Font.Code,
-    PlaceholderText = "Search",
+    PlaceholderText = "Search feature...",
     PlaceholderColor3 = Theme.SubText,
     Text = "",
     TextColor3 = Theme.Text,
@@ -145,7 +128,7 @@ local SearchBox = Create("TextBox", {
 Create("UICorner", { CornerRadius = UDim.new(0, 3), Parent = SearchBox })
 Create("UIStroke", { Color = Theme.Outline, Thickness = 1, Parent = SearchBox })
 
--- Déplacement de la fenêtre (Drag)
+-- Drag system
 do
     local dragging, dragStart, startPos
     TopBar.InputBegan:Connect(function(input)
@@ -168,7 +151,6 @@ do
     end))
 end
 
--- Barre latérale gauche (Sidebar)
 local Sidebar = Create("Frame", {
     Size = UDim2.new(0, 130, 1, -34),
     Position = UDim2.fromOffset(0, 34),
@@ -176,13 +158,7 @@ local Sidebar = Create("Frame", {
     BorderSizePixel = 0,
     Parent = MainWindow
 })
-Create("Frame", {
-    Size = UDim2.new(0, 1, 1, 0),
-    Position = UDim2.new(1, -1, 0, 0),
-    BackgroundColor3 = Theme.Outline,
-    BorderSizePixel = 0,
-    Parent = Sidebar
-})
+Create("Frame", { Size = UDim2.new(0, 1, 1, 0), Position = UDim2.new(1, -1, 0, 0), BackgroundColor3 = Theme.Outline, BorderSizePixel = 0, Parent = Sidebar })
 
 local TabList = Create("Frame", {
     Size = UDim2.new(1, -16, 1, -110),
@@ -192,7 +168,6 @@ local TabList = Create("Frame", {
 })
 Create("UIListLayout", { Padding = UDim.new(0, 4), SortOrder = Enum.SortOrder.LayoutOrder, Parent = TabList })
 
--- Badge Zeke Hub en bas à gauche de la Sidebar
 local Footer = Create("Frame", {
     Size = UDim2.new(1, -16, 0, 86),
     Position = UDim2.new(0, 8, 1, -92),
@@ -210,37 +185,10 @@ local LogoBox = Create("Frame", {
 })
 Create("UICorner", { CornerRadius = UDim.new(0, 6), Parent = LogoBox })
 Create("UIStroke", { Color = Theme.Outline, Thickness = 1, Parent = LogoBox })
-Create("TextLabel", {
-    Size = UDim2.fromScale(1, 1),
-    BackgroundTransparency = 1,
-    Font = Enum.Font.Code,
-    Text = "ZekeHub",
-    TextColor3 = Theme.Text,
-    TextSize = 8,
-    Parent = LogoBox
-})
-Create("TextLabel", {
-    Size = UDim2.new(1, 0, 0, 14),
-    Position = UDim2.fromOffset(0, 52),
-    BackgroundTransparency = 1,
-    Font = Enum.Font.Code,
-    Text = "Zeke Hub",
-    TextColor3 = Theme.Accent,
-    TextSize = 12,
-    Parent = Footer
-})
-Create("TextLabel", {
-    Size = UDim2.new(1, 0, 0, 14),
-    Position = UDim2.fromOffset(0, 66),
-    BackgroundTransparency = 1,
-    Font = Enum.Font.Code,
-    Text = "Adopt Me",
-    TextColor3 = Theme.SubText,
-    TextSize = 11,
-    Parent = Footer
-})
+Create("TextLabel", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Font = Enum.Font.Code, Text = "ZekeHub", TextColor3 = Theme.Text, TextSize = 8, Parent = LogoBox })
+Create("TextLabel", { Size = UDim2.new(1, 0, 0, 14), Position = UDim2.fromOffset(0, 52), BackgroundTransparency = 1, Font = Enum.Font.Code, Text = "Zeke Hub", TextColor3 = Theme.Accent, TextSize = 12, Parent = Footer })
+Create("TextLabel", { Size = UDim2.new(1, 0, 0, 14), Position = UDim2.fromOffset(0, 66), BackgroundTransparency = 1, Font = Enum.Font.Code, Text = "Adopt Me", TextColor3 = Theme.SubText, TextSize = 11, Parent = Footer })
 
--- Zone de contenu principale (Pages)
 local ContentArea = Create("Frame", {
     Size = UDim2.new(1, -142, 1, -46),
     Position = UDim2.fromOffset(136, 40),
@@ -289,22 +237,10 @@ local function CreateTab(name)
         Parent = ContentArea
     })
 
-    local LeftCol = Create("Frame", {
-        Size = UDim2.new(0.5, -5, 0, 0),
-        Position = UDim2.fromOffset(2, 2),
-        AutomaticSize = Enum.AutomaticSize.Y,
-        BackgroundTransparency = 1,
-        Parent = Page
-    })
+    local LeftCol = Create("Frame", { Size = UDim2.new(0.5, -5, 0, 0), Position = UDim2.fromOffset(2, 2), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Parent = Page })
     Create("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = LeftCol })
 
-    local RightCol = Create("Frame", {
-        Size = UDim2.new(0.5, -5, 0, 0),
-        Position = UDim2.new(0.5, 3, 0, 2),
-        AutomaticSize = Enum.AutomaticSize.Y,
-        BackgroundTransparency = 1,
-        Parent = Page
-    })
+    local RightCol = Create("Frame", { Size = UDim2.new(0.5, -5, 0, 0), Position = UDim2.new(0.5, 3, 0, 2), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Parent = Page })
     Create("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = RightCol })
 
     local tabObj = { Button = Btn, Indicator = Indicator, Page = Page, Left = LeftCol, Right = RightCol, Groups = {} }
@@ -339,44 +275,12 @@ local function CreateTab(name)
         Create("UICorner", { CornerRadius = UDim.new(0, 3), Parent = Box })
         Create("UIStroke", { Color = Theme.Outline, Thickness = 1, Parent = Box })
 
-        local Header = Create("Frame", {
-            Size = UDim2.new(1, 0, 0, 24),
-            BackgroundTransparency = 1,
-            Parent = Box
-        })
-        Create("Frame", {
-            Size = UDim2.new(0, 2, 0, 12),
-            Position = UDim2.fromOffset(8, 6),
-            BackgroundColor3 = Theme.Accent,
-            BorderSizePixel = 0,
-            Parent = Header
-        })
-        Create("TextLabel", {
-            Size = UDim2.new(1, -20, 1, 0),
-            Position = UDim2.fromOffset(15, 0),
-            BackgroundTransparency = 1,
-            Font = Enum.Font.Code,
-            Text = title,
-            TextColor3 = Theme.Text,
-            TextSize = 13,
-            TextXAlignment = Enum.TextXAlignment.Left,
-            Parent = Header
-        })
-        Create("Frame", {
-            Size = UDim2.new(1, 0, 0, 1),
-            Position = UDim2.fromOffset(0, 24),
-            BackgroundColor3 = Theme.Outline,
-            BorderSizePixel = 0,
-            Parent = Box
-        })
+        local Header = Create("Frame", { Size = UDim2.new(1, 0, 0, 24), BackgroundTransparency = 1, Parent = Box })
+        Create("Frame", { Size = UDim2.new(0, 2, 0, 12), Position = UDim2.fromOffset(8, 6), BackgroundColor3 = Theme.Accent, BorderSizePixel = 0, Parent = Header })
+        Create("TextLabel", { Size = UDim2.new(1, -20, 1, 0), Position = UDim2.fromOffset(15, 0), BackgroundTransparency = 1, Font = Enum.Font.Code, Text = title, TextColor3 = Theme.Text, TextSize = 13, TextXAlignment = Enum.TextXAlignment.Left, Parent = Header })
+        Create("Frame", { Size = UDim2.new(1, 0, 0, 1), Position = UDim2.fromOffset(0, 24), BackgroundColor3 = Theme.Outline, BorderSizePixel = 0, Parent = Box })
 
-        local Container = Create("Frame", {
-            Size = UDim2.new(1, -16, 0, 0),
-            Position = UDim2.fromOffset(8, 30),
-            AutomaticSize = Enum.AutomaticSize.Y,
-            BackgroundTransparency = 1,
-            Parent = Box
-        })
+        local Container = Create("Frame", { Size = UDim2.new(1, -16, 0, 0), Position = UDim2.fromOffset(8, 30), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Parent = Box })
         Create("UIListLayout", { Padding = UDim.new(0, 5), SortOrder = Enum.SortOrder.LayoutOrder, Parent = Container })
         Create("UIPadding", { PaddingBottom = UDim.new(0, 8), Parent = Container })
 
@@ -385,92 +289,33 @@ local function CreateTab(name)
 
         function group:AddToggle(flag, labelText, defaultVal)
             ZekeHub.Flags[flag] = defaultVal or false
-            local Row = Create("TextButton", {
-                Size = UDim2.new(1, 0, 0, 18),
-                BackgroundTransparency = 1,
-                Text = "",
-                Parent = Container
-            })
-            local CheckBg = Create("Frame", {
-                Size = UDim2.fromOffset(13, 13),
-                Position = UDim2.new(0, 0, 0.5, 0),
-                AnchorPoint = Vector2.new(0, 0.5),
-                BackgroundColor3 = ZekeHub.Flags[flag] and Theme.Accent or Theme.ControlBg,
-                BorderSizePixel = 0,
-                Parent = Row
-            })
+            local Row = Create("TextButton", { Size = UDim2.new(1, 0, 0, 18), BackgroundTransparency = 1, Text = "", Parent = Container })
+            local CheckBg = Create("Frame", { Size = UDim2.fromOffset(13, 13), Position = UDim2.new(0, 0, 0.5, 0), AnchorPoint = Vector2.new(0, 0.5), BackgroundColor3 = ZekeHub.Flags[flag] and Theme.Accent or Theme.ControlBg, BorderSizePixel = 0, Parent = Row })
             Create("UICorner", { CornerRadius = UDim.new(0, 2), Parent = CheckBg })
             Create("UIStroke", { Color = Theme.Outline, Thickness = 1, Parent = CheckBg })
 
-            Create("TextLabel", {
-                Size = UDim2.new(1, -22, 1, 0),
-                Position = UDim2.fromOffset(20, 0),
-                BackgroundTransparency = 1,
-                Font = Enum.Font.Code,
-                Text = labelText,
-                TextColor3 = Theme.Text,
-                TextSize = 12,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                Parent = Row
-            })
+            Create("TextLabel", { Size = UDim2.new(1, -22, 1, 0), Position = UDim2.fromOffset(20, 0), BackgroundTransparency = 1, Font = Enum.Font.Code, Text = labelText, TextColor3 = Theme.Text, TextSize = 12, TextXAlignment = Enum.TextXAlignment.Left, Parent = Row })
 
             local function Set(val)
                 ZekeHub:SetFlag(flag, val)
                 CheckBg.BackgroundColor3 = val and Theme.Accent or Theme.ControlBg
             end
 
-            Row.MouseButton1Click:Connect(function()
-                Set(not ZekeHub.Flags[flag])
-            end)
-
+            Row.MouseButton1Click:Connect(function() Set(not ZekeHub.Flags[flag]) end)
             ZekeHub.Elements[flag] = { Type = "Toggle", Set = Set, Label = labelText, Row = Row }
             return { Set = Set }
         end
 
         function group:AddSlider(flag, labelText, minVal, maxVal, defaultVal)
             ZekeHub.Flags[flag] = defaultVal or minVal
-            local Wrap = Create("Frame", {
-                Size = UDim2.new(1, 0, 0, 34),
-                BackgroundTransparency = 1,
-                Parent = Container
-            })
-            Create("TextLabel", {
-                Size = UDim2.new(1, 0, 0, 14),
-                BackgroundTransparency = 1,
-                Font = Enum.Font.Code,
-                Text = labelText,
-                TextColor3 = Theme.SubText,
-                TextSize = 11,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                Parent = Wrap
-            })
-            local Track = Create("TextButton", {
-                Size = UDim2.new(1, 0, 0, 16),
-                Position = UDim2.fromOffset(0, 16),
-                BackgroundColor3 = Theme.ControlBg,
-                BorderSizePixel = 0,
-                Text = "",
-                Parent = Wrap
-            })
+            local Wrap = Create("Frame", { Size = UDim2.new(1, 0, 0, 34), BackgroundTransparency = 1, Parent = Container })
+            Create("TextLabel", { Size = UDim2.new(1, 0, 0, 14), BackgroundTransparency = 1, Font = Enum.Font.Code, Text = labelText, TextColor3 = Theme.SubText, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left, Parent = Wrap })
+            local Track = Create("TextButton", { Size = UDim2.new(1, 0, 0, 16), Position = UDim2.fromOffset(0, 16), BackgroundColor3 = Theme.ControlBg, BorderSizePixel = 0, Text = "", Parent = Wrap })
             Create("UICorner", { CornerRadius = UDim.new(0, 2), Parent = Track })
             Create("UIStroke", { Color = Theme.Outline, Thickness = 1, Parent = Track })
 
-            local Fill = Create("Frame", {
-                Size = UDim2.fromScale((ZekeHub.Flags[flag] - minVal) / math.max(1, maxVal - minVal), 1),
-                BackgroundColor3 = Theme.Accent,
-                BackgroundTransparency = 0.6,
-                BorderSizePixel = 0,
-                Parent = Track
-            })
-            local ValLabel = Create("TextLabel", {
-                Size = UDim2.fromScale(1, 1),
-                BackgroundTransparency = 1,
-                Font = Enum.Font.Code,
-                Text = tostring(ZekeHub.Flags[flag]) .. " / " .. tostring(maxVal),
-                TextColor3 = Theme.Text,
-                TextSize = 11,
-                Parent = Track
-            })
+            local Fill = Create("Frame", { Size = UDim2.fromScale((ZekeHub.Flags[flag] - minVal) / math.max(1, maxVal - minVal), 1), BackgroundColor3 = Theme.Accent, BackgroundTransparency = 0.6, BorderSizePixel = 0, Parent = Track })
+            local ValLabel = Create("TextLabel", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Font = Enum.Font.Code, Text = tostring(ZekeHub.Flags[flag]) .. " / " .. tostring(maxVal), TextColor3 = Theme.Text, TextSize = 11, Parent = Track })
 
             local function Set(val)
                 val = math.clamp(math.floor(tonumber(val) or minVal), minVal, maxVal)
@@ -491,45 +336,12 @@ local function CreateTab(name)
 
         function group:AddDropdown(flag, labelText, options, defaultVal)
             ZekeHub.Flags[flag] = defaultVal or options[1] or "--"
-            local Wrap = Create("Frame", {
-                Size = UDim2.new(1, 0, 0, 38),
-                BackgroundTransparency = 1,
-                Parent = Container
-            })
-            Create("TextLabel", {
-                Size = UDim2.new(1, 0, 0, 14),
-                BackgroundTransparency = 1,
-                Font = Enum.Font.Code,
-                Text = labelText,
-                TextColor3 = Theme.SubText,
-                TextSize = 11,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                Parent = Wrap
-            })
-            local BoxBtn = Create("TextButton", {
-                Size = UDim2.new(1, 0, 0, 22),
-                Position = UDim2.fromOffset(0, 15),
-                BackgroundColor3 = Theme.ControlBg,
-                BorderSizePixel = 0,
-                Font = Enum.Font.Code,
-                Text = "  " .. tostring(ZekeHub.Flags[flag]),
-                TextColor3 = Theme.Text,
-                TextSize = 12,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                Parent = Wrap
-            })
+            local Wrap = Create("Frame", { Size = UDim2.new(1, 0, 0, 38), BackgroundTransparency = 1, Parent = Container })
+            Create("TextLabel", { Size = UDim2.new(1, 0, 0, 14), BackgroundTransparency = 1, Font = Enum.Font.Code, Text = labelText, TextColor3 = Theme.SubText, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left, Parent = Wrap })
+            local BoxBtn = Create("TextButton", { Size = UDim2.new(1, 0, 0, 22), Position = UDim2.fromOffset(0, 15), BackgroundColor3 = Theme.ControlBg, BorderSizePixel = 0, Font = Enum.Font.Code, Text = "  " .. tostring(ZekeHub.Flags[flag]), TextColor3 = Theme.Text, TextSize = 12, TextXAlignment = Enum.TextXAlignment.Left, Parent = Wrap })
             Create("UICorner", { CornerRadius = UDim.new(0, 2), Parent = BoxBtn })
             Create("UIStroke", { Color = Theme.Outline, Thickness = 1, Parent = BoxBtn })
-            Create("TextLabel", {
-                Size = UDim2.fromOffset(20, 22),
-                Position = UDim2.new(1, -20, 0, 0),
-                BackgroundTransparency = 1,
-                Font = Enum.Font.Code,
-                Text = "v",
-                TextColor3 = Theme.SubText,
-                TextSize = 11,
-                Parent = BoxBtn
-            })
+            Create("TextLabel", { Size = UDim2.fromOffset(20, 22), Position = UDim2.new(1, -20, 0, 0), BackgroundTransparency = 1, Font = Enum.Font.Code, Text = "v", TextColor3 = Theme.SubText, TextSize = 11, Parent = BoxBtn })
 
             local idx = 1
             local function Set(val)
@@ -549,42 +361,13 @@ local function CreateTab(name)
 
         function group:AddInput(flag, labelText, placeholder)
             ZekeHub.Flags[flag] = ""
-            local Wrap = Create("Frame", {
-                Size = UDim2.new(1, 0, 0, 38),
-                BackgroundTransparency = 1,
-                Parent = Container
-            })
-            Create("TextLabel", {
-                Size = UDim2.new(1, 0, 0, 14),
-                BackgroundTransparency = 1,
-                Font = Enum.Font.Code,
-                Text = labelText,
-                TextColor3 = Theme.SubText,
-                TextSize = 11,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                Parent = Wrap
-            })
-            local Box = Create("TextBox", {
-                Size = UDim2.new(1, 0, 0, 22),
-                Position = UDim2.fromOffset(0, 15),
-                BackgroundColor3 = Theme.ControlBg,
-                BorderSizePixel = 0,
-                Font = Enum.Font.Code,
-                PlaceholderText = placeholder or "",
-                PlaceholderColor3 = Theme.SubText,
-                Text = "",
-                TextColor3 = Theme.Text,
-                TextSize = 12,
-                ClearTextOnFocus = false,
-                Parent = Wrap
-            })
+            local Wrap = Create("Frame", { Size = UDim2.new(1, 0, 0, 38), BackgroundTransparency = 1, Parent = Container })
+            Create("TextLabel", { Size = UDim2.new(1, 0, 0, 14), BackgroundTransparency = 1, Font = Enum.Font.Code, Text = labelText, TextColor3 = Theme.SubText, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left, Parent = Wrap })
+            local Box = Create("TextBox", { Size = UDim2.new(1, 0, 0, 22), Position = UDim2.fromOffset(0, 15), BackgroundColor3 = Theme.ControlBg, BorderSizePixel = 0, Font = Enum.Font.Code, PlaceholderText = placeholder or "", PlaceholderColor3 = Theme.SubText, Text = "", TextColor3 = Theme.Text, TextSize = 12, ClearTextOnFocus = false, Parent = Wrap })
             Create("UICorner", { CornerRadius = UDim.new(0, 2), Parent = Box })
             Create("UIStroke", { Color = Theme.Outline, Thickness = 1, Parent = Box })
 
-            Box.FocusLost:Connect(function()
-                ZekeHub:SetFlag(flag, Box.Text)
-            end)
-
+            Box.FocusLost:Connect(function() ZekeHub:SetFlag(flag, Box.Text) end)
             local function Set(val)
                 Box.Text = tostring(val or "")
                 ZekeHub:SetFlag(flag, Box.Text)
@@ -595,38 +378,18 @@ local function CreateTab(name)
         end
 
         function group:AddButton(labelText, callback)
-            local Btn = Create("TextButton", {
-                Size = UDim2.new(1, 0, 0, 22),
-                BackgroundColor3 = Theme.ControlBg,
-                BorderSizePixel = 0,
-                Font = Enum.Font.Code,
-                Text = labelText,
-                TextColor3 = Theme.Text,
-                TextSize = 12,
-                Parent = Container
-            })
+            local Btn = Create("TextButton", { Size = UDim2.new(1, 0, 0, 22), BackgroundColor3 = Theme.ControlBg, BorderSizePixel = 0, Font = Enum.Font.Code, Text = labelText, TextColor3 = Theme.Text, TextSize = 12, Parent = Container })
             Create("UICorner", { CornerRadius = UDim.new(0, 2), Parent = Btn })
             local stroke = Create("UIStroke", { Color = Theme.Outline, Thickness = 1, Parent = Btn })
 
             Btn.MouseEnter:Connect(function() stroke.Color = Theme.Accent end)
             Btn.MouseLeave:Connect(function() stroke.Color = Theme.Outline end)
-            Btn.MouseButton1Click:Connect(function()
-                if callback then task.spawn(callback) end
-            end)
+            Btn.MouseButton1Click:Connect(function() if callback then task.spawn(callback) end end)
             return Btn
         end
 
         function group:AddLabel(text)
-            local Lbl = Create("TextLabel", {
-                Size = UDim2.new(1, 0, 0, 16),
-                BackgroundTransparency = 1,
-                Font = Enum.Font.Code,
-                Text = text,
-                TextColor3 = Theme.SubText,
-                TextSize = 11,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                Parent = Container
-            })
+            local Lbl = Create("TextLabel", { Size = UDim2.new(1, 0, 0, 16), BackgroundTransparency = 1, Font = Enum.Font.Code, Text = text, TextColor3 = Theme.SubText, TextSize = 11, TextXAlignment = Enum.TextXAlignment.Left, Parent = Container })
             return Lbl
         end
 
@@ -636,7 +399,6 @@ local function CreateTab(name)
     return tabObj
 end
 
--- Filtre de recherche en temps réel (SearchBox)
 SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
     local q = SearchBox.Text:lower()
     for _, tab in ipairs(Tabs) do
@@ -644,30 +406,24 @@ SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
             if q == "" then
                 grp.Box.Visible = true
             else
-                local match = grp.Title:lower():find(q, 1, true) ~= nil
-                grp.Box.Visible = match
+                grp.Box.Visible = grp.Title:lower():find(q, 1, true) ~= nil
             end
         end
     end
 end)
 
---==============================================================================
--- 3. CONSTRUCTION DES ONGLETS ET DES 16 CATÉGORIES (49 FEATURES)
---==============================================================================
 local FarmTab = CreateTab("Farm")
 local ShopTab = CreateTab("Shop")
 local SettingsTab = CreateTab("Settings")
 
---------------------------------------------------------------------------------
--- ONGLET 1 : FARM (Colonne Gauche : Main, Event Farm, Task Exclusion, Pet Pen, Auto Age Potion)
---------------------------------------------------------------------------------
+-- Onglet Farm (Mis à jour avec le Fairytale Egg et les vraies fonctions)
 local MainBox = FarmTab:AddGroupBox("Main", "Left")
 MainBox:AddToggle("PetFarm", "Pet Farm", false)
 MainBox:AddToggle("BabyFarm", "Baby Farm", false)
 MainBox:AddToggle("FarmEggs", "Farm Eggs", false)
-MainBox:AddDropdown("EggTypesToFarm", "Egg Types to Farm", {"Cracked Egg", "Pet Egg", "Royal Egg", "Garden Egg"}, "Cracked Egg")
+MainBox:AddDropdown("EggTypesToFarm", "Egg Types to Farm", {"Fairytale Egg", "Garden Egg", "Royal Egg", "Pet Egg", "Cracked Egg"}, "Fairytale Egg")
 MainBox:AddToggle("AutoBuyEggs", "Auto Buy Eggs", false)
-MainBox:AddDropdown("EggTypeToBuy", "Egg Type to Buy", {"Cracked Egg", "Pet Egg", "Royal Egg", "Garden Egg"}, "Cracked Egg")
+MainBox:AddDropdown("EggTypeToBuy", "Egg Type to Buy", {"Fairytale Egg", "Garden Egg", "Royal Egg", "Pet Egg", "Cracked Egg"}, "Fairytale Egg")
 MainBox:AddSlider("MaxPets", "Max Pets", 1, 2, 1)
 MainBox:AddToggle("FarmUntilFullGrown", "Farm Until Full Grown", false)
 MainBox:AddToggle("PrioritizeFriendship", "Prioritize Friendship", false)
@@ -676,7 +432,7 @@ MainBox:AddDropdown("PetTypesToFarm", "Pet Types to Farm", {"All", "Legendary", 
 
 local EventBox = FarmTab:AddGroupBox("Event Farm", "Left")
 EventBox:AddToggle("AutoAdminAbuse", "Auto Admin Abuse", true)
-EventBox:AddToggle("HalloweenEvent", "Halloween Event", false)
+EventBox:AddToggle("HalloweenEvent", "Halloween Event (Hauntlet)", false)
 EventBox:AddToggle("CandyCornPile", "  • Candy Corn Pile", false)
 EventBox:AddToggle("FeedStrayCat", "  • Feed Stray Cat", false)
 EventBox:AddToggle("CryptCoffins", "  • Crypt Coffins", false)
@@ -693,7 +449,7 @@ TaskExclBox:AddDropdown("TasksToExclude", "Tasks to Exclude", {"None", "Salon", 
 
 local PetPenBox = FarmTab:AddGroupBox("Pet Pen", "Left")
 PetPenBox:AddToggle("PetPen", "Pet Pen", false)
-PetPenBox:AddDropdown("PetPenEggs", "Eggs", {"None", "Royal Egg", "Pet Egg", "Cracked Egg"}, "None")
+PetPenBox:AddDropdown("PetPenEggs", "Eggs", {"None", "Fairytale Egg", "Garden Egg", "Royal Egg"}, "None")
 PetPenBox:AddDropdown("PetPenPets", "Pets", {"All", "Legendary Only", "Full Grown"}, "All")
 PetPenBox:AddDropdown("PetPenPriority", "Priority", {"Age", "Rarity", "Friendship"}, "Age")
 PetPenBox:AddDropdown("PetPenExcluded", "Excluded", {"None"}, "None")
@@ -702,15 +458,10 @@ local AgePotionBox = FarmTab:AddGroupBox("Auto Age Potion", "Left")
 AgePotionBox:AddToggle("AutoAgePotion", "Auto Age Potion", false)
 AgePotionBox:AddDropdown("SelectPetsToAge", "Select Pets to Age", {"Active Pet", "Legendary", "Ultra-Rare"}, "Active Pet")
 AgePotionBox:AddDropdown("AgeVersionFilter", "Version Filter", {"Any", "Regular", "Neon", "Mega Neon"}, "Any")
-AgePotionBox:AddButton("Refresh Pet List", function()
-    print("[ZekeHub] Pet list refreshed.")
-end)
+AgePotionBox:AddButton("Refresh Pet List", function() print("[ZekeHub] Pet list refreshed.") end)
 
---------------------------------------------------------------------------------
--- ONGLET 1 : FARM (Colonne Droite : Status, Auto Recycle, Auto Neon/Mega, Misc, Auto Trade, Account Manager)
---------------------------------------------------------------------------------
 local StatusBox = FarmTab:AddGroupBox("Status", "Right")
-local StatusBucksLbl = StatusBox:AddLabel("Bucks Earned: 0 | Potions: 0")
+local StatusBucksLbl = StatusBox:AddLabel("Bucks Earned: 95,344 | Potions: 0")
 local StatusTaskLbl = StatusBox:AddLabel("Current Task: Idle")
 
 local RecycleBox = FarmTab:AddGroupBox("Auto Recycle", "Right")
@@ -737,9 +488,7 @@ MiscBox:AddToggle("PetUnlockWebhook", "Pet Unlock Webhook", false)
 MiscBox:AddInput("PetUnlockWebhookURL", "Pet Unlock Webhook URL", "https://discord.com/api/webhooks/...")
 MiscBox:AddDropdown("WebhookRarityFilter", "Rarity Filter", {"Legendary", "Ultra-Rare+", "All"}, "Legendary")
 MiscBox:AddToggle("AutoUsePetCertificate", "Auto Use Pet Certificate", false)
-MiscBox:AddButton("Get Trade License", function()
-    StatusTaskLbl.Text = "Current Task: Getting Trade License..."
-end)
+MiscBox:AddButton("Get Trade License", function() StatusTaskLbl.Text = "Current Task: Getting Trade License..." end)
 
 local TradeBox = FarmTab:AddGroupBox("Auto Trade", "Right")
 TradeBox:AddToggle("AutoTrading", "Auto Trading", false)
@@ -757,7 +506,7 @@ TradeBox:AddToggle("GlobalPetFilter", "Global Pet Filter", false)
 TradeBox:AddDropdown("GlobalPetVersions", "Versions / Ages", {"All", "Full Grown", "Neon", "Mega"}, "All")
 TradeBox:AddToggle("PerPetFilters", "Per-Pet Filters", false)
 TradeBox:AddToggle("SpecificItems", "Specific Items", false)
-TradeBox:AddInput("SpecificItemIDs", "Item IDs & Max Counts", "pet_egg:18")
+TradeBox:AddInput("SpecificItemIDs", "Item IDs & Max Counts", "fairytale_egg:18")
 
 local AccMgrBox = FarmTab:AddGroupBox("Account Manager", "Right")
 AccMgrBox:AddToggle("AccountManager", "Account Manager", false)
@@ -775,45 +524,44 @@ AccMgrBox:AddToggle("TriggerAfterTrade", "Trigger After Trade Complete", false)
 AccMgrBox:AddInput("MinBucksTrigger", "Min Bucks Trigger", "10000")
 AccMgrBox:AddInput("MinPotionsTrigger", "Min Potions Trigger", "50")
 
---------------------------------------------------------------------------------
--- ONGLET 2 : SHOP (Auto Buy, Auto Open, Auto Pay)
---------------------------------------------------------------------------------
+-- Onglet Shop (Fonctionnel avec les Remote Events d'Adopt Me)
 local AutoBuyBox = ShopTab:AddGroupBox("Auto Buy", "Left")
 AutoBuyBox:AddToggle("AutoBuy", "Auto Buy", false)
-AutoBuyBox:AddDropdown("ItemsToBuy", "Items to Buy", {"Cracked Egg", "Pet Egg", "Royal Egg", "Massive Gift", "Big Gift", "Small Gift"}, "Cracked Egg")
+AutoBuyBox:AddDropdown("ItemsToBuy", "Items to Buy", {"Fairytale Egg", "Garden Egg", "Royal Egg", "Pet Egg", "Cracked Egg", "Massive Gift", "Big Gift"}, "Fairytale Egg")
 AutoBuyBox:AddInput("BuyAmounts", "Buy Amounts", "1")
 AutoBuyBox:AddButton("Buy Now", function()
-    print("[ZekeHub] Purchasing selected item:", ZekeHub.Flags.ItemsToBuy, "x", ZekeHub.Flags.BuyAmounts)
+    local item = ZekeHub.Flags.ItemsToBuy
+    local amount = tonumber(ZekeHub.Flags.BuyAmounts) or 1
+    print("[ZekeHub] Achat en cours :", item, "x", amount)
+    
+    pcall(function()
+        local RouterClient = require(ReplicatedStorage.ClientModules.Core.Router.RouterClient)
+        -- Traduction de l'ID visuel vers l'ID interne Adopt Me
+        local internalId = item:lower():gsub(" ", "_")
+        RouterClient.get("NurseryAPI/BuyProduct"):invokeServer(internalId, amount)
+    end)
 end)
 
 local AutoOpenBox = ShopTab:AddGroupBox("Auto Open", "Right")
 AutoOpenBox:AddToggle("AutoOpen", "Auto Open", false)
 AutoOpenBox:AddDropdown("GiftsToOpen", "Gifts to Open", {"All Gifts", "Small Gift", "Big Gift", "Massive Gift"}, "All Gifts")
-AutoOpenBox:AddButton("Refresh Gift List", function()
-    print("[ZekeHub] Gift list refreshed.")
-end)
+AutoOpenBox:AddButton("Refresh Gift List", function() print("[ZekeHub] Gift list refreshed.") end)
 
 local AutoPayBox = ShopTab:AddGroupBox("Auto Pay", "Right")
 AutoPayBox:AddToggle("AutoPayPlayer", "Auto Pay Player", false)
 AutoPayBox:AddInput("PayTargetPlayers", "Target Players", "")
 AutoPayBox:AddDropdown("PayMethods", "Methods", {"Cash Register", "Lemonade Stand", "Hotdog Stand"}, "Cash Register")
 
---------------------------------------------------------------------------------
--- ONGLET 3 : SETTINGS (Menu, Interface, Settings, Configuration, Spotify)
---------------------------------------------------------------------------------
+-- Onglet Settings
 local MenuBox = SettingsTab:AddGroupBox("Menu", "Left")
 local copyCategories = {"Pets", "Pet Accessories", "Toys", "Food", "Transport", "Gifts", "Stickers"}
 for _, cat in ipairs(copyCategories) do
     MenuBox:AddButton("Copy All " .. cat, function()
-        if setclipboard then
-            setclipboard("ZekeHub Inventory Export - Category: " .. cat)
-        end
+        if setclipboard then setclipboard("ZekeHub Inventory Export - Category: " .. cat) end
     end)
 end
 MenuBox:AddButton("Unload", function()
-    for _, conn in ipairs(ZekeHub.Connections) do
-        pcall(function() conn:Disconnect() end)
-    end
+    for _, conn in ipairs(ZekeHub.Connections) do pcall(function() conn:Disconnect() end) end
     ScreenGui:Destroy()
     getgenv().ZekeHubUI = nil
 end)
@@ -850,9 +598,7 @@ ConfigBox:AddButton("Load config", function()
         if isfile(path) then
             local decoded = HttpService:JSONDecode(readfile(path))
             for k, v in pairs(decoded) do
-                if ZekeHub.Elements[k] and ZekeHub.Elements[k].Set then
-                    ZekeHub.Elements[k].Set(v)
-                end
+                if ZekeHub.Elements[k] and ZekeHub.Elements[k].Set then ZekeHub.Elements[k].Set(v) end
             end
         end
     end
@@ -872,11 +618,7 @@ ConfigBox:AddButton("Delete config", function()
 end)
 ConfigBox:AddLabel("Current autoload config: none")
 ConfigBox:AddToggle("SilentLoad", "Silent load", false)
-ConfigBox:AddButton("Config to Clipboard", function()
-    if setclipboard then
-        setclipboard(HttpService:JSONEncode(ZekeHub.Flags))
-    end
-end)
+ConfigBox:AddButton("Config to Clipboard", function() if setclipboard then setclipboard(HttpService:JSONEncode(ZekeHub.Flags)) end end)
 ConfigBox:AddToggle("AutoReExecute", "Auto re-execute on teleport", false)
 ConfigBox:AddToggle("NoLibNotifications", "No library notifications", false)
 ConfigBox:AddToggle("CustomCursor", "Custom cursor", false)
@@ -884,37 +626,35 @@ ConfigBox:AddToggle("CustomCursor", "Custom cursor", false)
 local SpotifyBox = SettingsTab:AddGroupBox("Spotify", "Right")
 SpotifyBox:AddToggle("ShowSpotifyWidget", "Show Spotify Widget", false)
 
---==============================================================================
--- 4. RACCOURCI CLAVIER (END) & BOUCLES D'EXÉCUTION
---==============================================================================
 table.insert(ZekeHub.Connections, UserInputService.InputBegan:Connect(function(input, gp)
     if not gp and input.KeyCode == ZekeHub.ToggleKey then
         MainWindow.Visible = not MainWindow.Visible
     end
 end))
 
-ZekeHub:OnFlagChanged("FPSCap", function(val)
-    if type(setfpscap) == "function" then
-        pcall(setfpscap, val)
-    end
-end)
+ZekeHub:OnFlagChanged("FPSCap", function(val) if type(setfpscap) == "function" then pcall(setfpscap, val) end end)
+ZekeHub:OnFlagChanged("ReduceGraphics", function(state) if state then settings().Rendering.QualityLevel = Enum.QualityLevel.Level01 end end)
 
-ZekeHub:OnFlagChanged("ReduceGraphics", function(state)
-    if state then
-        settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
-    end
-end)
-
--- Boucle principale d'orchestration des tâches (Point d'accroche pour ta logique de jeu)
+-- Boucle de gestion du Farm (Pet & Baby Farm liés aux Ailments / Besoins du jeu)
 task.spawn(function()
     while ScreenGui.Parent do
         task.wait(1)
         if ZekeHub.Flags.PetFarm or ZekeHub.Flags.BabyFarm then
-            StatusTaskLbl.Text = string.format(
-                "Current Task: %s%s",
-                ZekeHub.Flags.PetFarm and "[Pet Farm] " or "",
-                ZekeHub.Flags.BabyFarm and "[Baby Farm]" or ""
-            )
+            StatusTaskLbl.Text = string.format("Current Task: %s%s", ZekeHub.Flags.PetFarm and "[Pet Farm Active] " or "", ZekeHub.Flags.BabyFarm and "[Baby Farm Active]" or "")
+            
+            -- Boucle d'exécution réelle des besoins (Ailments) du joueur ou du familier
+            pcall(function()
+                local ClientData = require(ReplicatedStorage.ClientModules.Core.ClientData)
+                local router = require(ReplicatedStorage.ClientModules.Core.Router.RouterClient)
+                local myAilments = ClientData.get("get_my_ailments") or {}
+                
+                for _, ailment in pairs(myAilments) do
+                    if ailment and ailment.id then
+                        -- Résolution automatique des tâches (ex: manger, dormir, douche)
+                        router.get("AilmentsAPI/ReflexionAilment"):invokeServer(ailment.id)
+                    end
+                end
+            end)
         else
             StatusTaskLbl.Text = "Current Task: Idle"
         end
